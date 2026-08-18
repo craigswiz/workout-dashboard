@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Workout Dashboard</title>
+<style>
+:root{--bg:#0f1115;--panel:#171a21;--panel2:#202530;--text:#f7f8fa;--muted:#aab1bf;--accent:#8fe388;--accent2:#8fbaff;--warn:#ffd166;--line:#2b313d;--done:#213b25}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#0c0f13,#151922 65%);color:var(--text)}
+button{font:inherit}.app{max-width:560px;margin:auto;min-height:100vh;padding-bottom:120px}
+.top{position:sticky;top:0;z-index:10;background:rgba(15,17,21,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 16px}
+.brand,.timer-row,.circuit-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand h1{font-size:18px;margin:0}.pill{font-size:11px;color:#101318;background:var(--accent);padding:6px 10px;border-radius:999px;font-weight:900}.timer-row{margin-top:12px}.timer-big{font-size:30px;font-weight:900;letter-spacing:-1px}.small{font-size:11px;color:var(--muted)}
+.btn{border:0;border-radius:13px;padding:12px 14px;font-weight:900}.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}.primary{background:var(--accent);color:#0d160f}.warning{background:var(--warn);color:#17130b}
+.stats{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px;margin-top:12px}
+.alert-controls{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}.alert-toggle{border:1px solid var(--line);background:#141922;color:var(--muted);border-radius:999px;padding:6px 9px;font-size:10px;font-weight:900}.alert-toggle.on{color:#0d160f;background:var(--accent);border-color:var(--accent)}.alert-toggle:disabled{opacity:.38}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px;text-align:center}.stat b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat span{font-size:10px;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 16px 6px}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:11px 8px;border-radius:13px;font-weight:800}.tab.active{background:#eef7ef;color:#111;border-color:#eef7ef}
+main{padding:8px 16px}.workout-head h2{margin:6px 0 2px;font-size:20px}.workout-head p{margin:0 0 14px;color:var(--muted);font-size:13px}.circuit-panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:15px}.circuit-title h3{margin:0;font-size:18px}.circuit-controls{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;margin:12px 0 10px}.pause-btn{background:var(--warn);color:#17130b;border:0;border-radius:12px;padding:12px 16px;font-weight:900}.pause-btn:disabled{opacity:.45}.circuit-timers{display:grid;grid-template-columns:1fr 1fr;gap:7px}.mini-timer{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#11151c;border:1px solid var(--line);border-radius:12px;padding:7px 10px;min-height:58px}.mini-timer span{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em;line-height:1}.mini-timer b{font-size:28px;line-height:1.05;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.04em}.rest-active{border-color:var(--warn);box-shadow:0 0 0 1px rgba(255,209,102,.18) inset}.countdown-overlay{position:fixed;inset:0;z-index:100;background:rgba(8,10,14,.94);display:none;align-items:center;justify-content:center;flex-direction:column}.countdown-overlay.show{display:flex}.countdown-overlay .label{font-size:14px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.12em}.countdown-overlay .number{font-size:112px;line-height:1;font-weight:950;margin-top:8px}.countdown-overlay .sub{margin-top:14px;color:var(--muted);font-size:13px}.round-chip{font-size:12px;font-weight:900;background:#283241;color:#dbe7ff;padding:7px 10px;border-radius:999px}.instructions{color:var(--muted);font-size:13px;line-height:1.4;margin:7px 0 14px}
+.exercise{display:grid;grid-template-columns:82px 1fr auto;gap:12px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:9px;margin-bottom:9px;transition:.15s}.exercise.done{background:var(--done);border-color:#3f6a45;opacity:.78}.photo{width:82px;height:72px;border-radius:11px;background:radial-gradient(circle at 30% 25%,#3a4355,#232a36 55%,#191d25);display:flex;align-items:center;justify-content:center;text-align:center;color:#98a3b5;font-size:9px;padding:6px}.info h4{margin:0 0 3px;font-size:15px}.dose{font-weight:900;font-size:13px}.cue{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.25}.check{width:38px;height:38px;border-radius:50%;border:1px solid #495161;background:#171a21;color:#dfe5ef;font-weight:900}.exercise.done .check{background:var(--accent);color:#0d160f;border-color:var(--accent)}.exercise.active{border-color:var(--accent2);box-shadow:0 0 0 1px rgba(143,186,255,.22) inset}.exercise-progress{grid-column:2 / 4;height:8px;background:#11151c;border:1px solid #313846;border-radius:999px;overflow:hidden;margin-top:-3px}.exercise-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:none;will-change:width}.exercise-progress.complete span{width:100%}.exercise-status{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:900;margin-top:5px}
+.circuit-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.progress{height:7px;background:#252b35;border-radius:999px;overflow:hidden;margin:14px 0 3px}.progress span{display:block;height:100%;background:var(--accent);width:0}.progress-text{text-align:right;color:var(--muted);font-size:10px}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(560px,100%);padding:18px 16px;background:linear-gradient(180deg,rgba(15,17,21,0),#0f1115 34%)}.nav{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:8px;background:#171a21;border:1px solid var(--line);border-radius:18px;padding:9px}.nav button{background:transparent;border:0;color:var(--text);font-weight:900;padding:11px 5px}.nav .center{background:#eef7ef;color:#111;border-radius:12px}.muted-button{opacity:.35;pointer-events:none}.complete-banner{display:none;margin-top:12px;padding:14px;border-radius:15px;background:#203324;border:1px solid #42684a;text-align:center;font-weight:900;color:#baf0bf}
+
+.overall-wrap{margin:10px 0 2px}.overall-label{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.06em}.overall-progress{height:6px;background:#252b35;border-radius:999px;overflow:hidden;margin-top:6px}.overall-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .25s ease}.rest-focus{display:none;background:#17130b;border:1px solid var(--warn);border-radius:16px;padding:12px 14px;margin:10px 0 12px}.rest-focus.show{display:flex;justify-content:space-between;align-items:center;gap:14px}.rest-main{font-size:30px;font-weight:950;color:var(--warn);font-variant-numeric:tabular-nums;line-height:1}.rest-upnext{flex:1;text-align:right}.rest-upnext span{display:block;color:var(--muted);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.rest-upnext b{display:block;margin-top:3px;font-size:13px}.transition-banner{display:none;background:#182533;border:1px solid #36506b;border-radius:16px;padding:14px;margin:10px 0;text-align:center}.transition-banner.show{display:block}.transition-banner b{font-size:16px}.transition-banner span{display:block;color:var(--muted);font-size:11px;margin-top:4px}.resume-overlay{position:fixed;inset:0;z-index:120;background:rgba(8,10,14,.94);display:none;align-items:center;justify-content:center;padding:20px}.resume-overlay.show{display:flex}.resume-card{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px}.resume-card h3{margin:0 0 8px}.resume-card p{color:var(--muted);font-size:13px;line-height:1.45}.resume-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}.wake-chip{font-size:9px;color:var(--muted);text-align:right;margin-top:5px}.exercise.next{border-color:#44536a}.exercise.next .exercise-status{color:var(--accent2)}
+
+.info-btn{width:28px;height:28px;border-radius:50%;border:1px solid #5b6574;background:#151a22;color:#dbe7ff;font-weight:950;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;margin-left:7px;vertical-align:middle;cursor:pointer}.info-btn:hover,.info-btn:focus{border-color:var(--accent2);color:var(--accent2);outline:none}.exercise-name-row{display:flex;align-items:center;gap:2px}.exercise-name-row h4{flex:1}
+.exercise-modal{position:fixed;inset:0;z-index:160;background:rgba(5,7,10,.92);display:none;align-items:flex-end;justify-content:center;padding:0}.exercise-modal.show{display:flex}.exercise-sheet{width:min(560px,100%);max-height:92vh;overflow:auto;background:#171a21;border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;padding:16px 16px 28px;box-shadow:0 -18px 50px rgba(0,0,0,.45)}.sheet-handle{width:42px;height:4px;background:#46505f;border-radius:999px;margin:0 auto 12px}.sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.sheet-head h3{margin:0;font-size:22px;line-height:1.1}.close-info{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:20px}.exercise-photo-large{width:100%;aspect-ratio:4/3;object-fit:contain;background:#0e1116;border:1px solid var(--line);border-radius:16px;margin-top:14px}.sheet-dose{display:inline-block;margin-top:10px;background:#263143;color:#dbe7ff;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900}.detail-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}.detail-box{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px}.detail-box b{display:block;font-size:11px;color:var(--accent2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}.detail-box p{margin:0;color:#e7ebf1;font-size:13px;line-height:1.45}.source-line{font-size:10px;color:var(--muted);margin-top:10px;line-height:1.35}.source-line a{color:#a9c9ff}
+
+.selector-view{max-width:560px;margin:auto;min-height:100vh;padding:24px 16px 40px}.selector-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.selector-head h1{font-size:26px;margin:0}.selector-head p{margin:5px 0 0;color:var(--muted);font-size:13px}.modality-grid,.workout-grid{display:grid;gap:12px}.select-card{width:100%;text-align:left;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:20px;padding:18px;cursor:pointer}.select-card:hover,.select-card:focus{border-color:#4a5568;outline:none}.select-card h2,.select-card h3{margin:0 0 6px}.select-card h2{font-size:21px}.select-card h3{font-size:18px}.select-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}.select-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.select-tag{font-size:10px;font-weight:900;color:#dbe7ff;background:#263143;border-radius:999px;padding:6px 9px}.card-arrow{float:right;font-size:22px;color:var(--accent2)}.selector-back{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:9px 12px;font-weight:900}.workout-navrow{display:flex;align-items:center;gap:8px;margin-bottom:10px}.workout-navrow button{border:1px solid var(--line);background:#141922;color:var(--muted);border-radius:999px;padding:6px 9px;font-size:10px;font-weight:900}.workout-navrow span{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.selector-section-label{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.1em;margin:18px 0 10px}.empty-card{background:#11151c;border:1px dashed #3a4350;border-radius:18px;padding:18px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="selector-view" id="homeView">
+  <div class="selector-head"><div><h1>Workout Dashboard</h1><p>Choose a training modality.</p></div><div class="pill">READY</div></div>
+  <div class="selector-section-label">Workout Type</div>
+  <div class="modality-grid" id="modalityGrid"></div>
+</div>
+<div class="selector-view" id="modalityView" style="display:none">
+  <div class="selector-head"><div><button class="selector-back" id="backHome">← Home</button><h1 id="modalityTitle" style="margin-top:16px"></h1><p id="modalityDescription"></p></div></div>
+  <div class="selector-section-label">Choose Workout</div>
+  <div class="workout-grid" id="workoutGrid"></div>
+</div>
+<div class="app" id="workoutView" style="display:none">
+<header class="top">
+  <div class="workout-navrow"><button id="backToWorkouts">← Workouts</button><span id="workoutBreadcrumb">Upper Body · Workout A</span></div>
+  <div class="brand"><h1>Workout Dashboard</h1><div class="pill" id="status">READY</div></div>
+  <div class="timer-row"><div><div class="small">Elapsed</div><div class="timer-big" id="elapsed">00:00</div></div><button class="btn secondary" id="timerBtn">Start Workout</button></div>
+  <div class="stats">
+    <div class="stat"><b id="blockStat">Push</b><span>Current circuit</span></div>
+    <div class="stat"><b id="roundStat">1 / 3</b><span>Round</span></div>
+    <div class="stat"><b id="goalStat">45:00</b><span>Goal</span></div>
+  </div>
+  <div class="alert-controls"><button class="alert-toggle on" id="soundToggle">🔊 Sound</button><button class="alert-toggle on" id="hapticToggle">📳 Haptics</button></div>
+</header>
+<main>
+  <div class="workout-head"><h2 id="workoutTitle"></h2><p>Complete every exercise once, then repeat the circuit for the prescribed rounds.</p><div class="overall-wrap"><div class="overall-label"><span>Workout Progress</span><span id="overallText">0%</span></div><div class="overall-progress"><span id="overallProgress"></span></div><div class="wake-chip" id="wakeStatus">Screen awake: off</div></div></div>
+  <section class="circuit-panel">
+    <div class="circuit-title"><h3 id="circuitName"></h3><div class="round-chip" id="roundChip"></div></div>
+    <div class="circuit-controls">
+      <button class="pause-btn" id="pauseBtn" disabled>Pause</button>
+      <div class="circuit-timers">
+        <div class="mini-timer"><span>Circuit</span><b id="circuitTimer">00:00</b></div>
+        <div class="mini-timer" id="restBox"><span>Rest</span><b id="restDisplay">—</b></div>
+      </div>
+    </div>
+    <div class="instructions" id="instructions"></div>
+    <div class="rest-focus" id="restFocus"><div class="rest-main" id="restFocusTime">REST 00:00</div><div class="rest-upnext"><span>Up Next</span><b id="restUpNext">—</b></div></div>
+    <div class="transition-banner" id="transitionBanner"><b id="transitionTitle">Round complete</b><span id="transitionSub">Get ready for the next round</span></div>
+    <div id="exerciseList"></div>
+    <div class="progress"><span id="roundProgress"></span></div><div class="progress-text" id="progressText"></div>
+    <div class="circuit-actions"><button class="btn secondary" onclick="restTimer(45,this)">45 sec Rest</button><button class="btn primary" id="roundBtn" onclick="finishRound()">Finish Round</button></div>
+    <div class="complete-banner" id="completeBanner">Circuit complete ✓</div>
+  </section>
+</main>
+</div>
+<div class="countdown-overlay" id="countdownOverlay"><div class="label">Get Ready</div><div class="number" id="countdownNumber">5</div><div class="sub">Workout starts when the countdown reaches zero</div></div>
+<div class="resume-overlay" id="resumeOverlay"><div class="resume-card"><h3>Resume workout?</h3><p id="resumeSummary"></p><div class="resume-actions"><button class="btn secondary" id="discardResume">Start Fresh</button><button class="btn primary" id="resumeWorkout">Resume</button></div></div></div>
+<div class="exercise-modal" id="exerciseModal" role="dialog" aria-modal="true" aria-labelledby="exerciseModalTitle"><div class="exercise-sheet"><div class="sheet-handle"></div><div class="sheet-head"><div><div class="small">Exercise Guide</div><h3 id="exerciseModalTitle"></h3><div class="sheet-dose" id="exerciseModalDose"></div></div><button class="close-info" id="closeExerciseInfo" aria-label="Close exercise information">×</button></div><img class="exercise-photo-large" id="exerciseModalImage" alt="Exercise demonstration"><div class="detail-grid"><div class="detail-box"><b>How to do it</b><p id="exerciseModalHow"></p></div><div class="detail-box"><b>Focus</b><p id="exerciseModalFocus"></p></div><div class="detail-box"><b>Form check</b><p id="exerciseModalAvoid"></p></div></div><div class="source-line" id="exerciseModalSource"></div></div></div>
+<div class="bottom"><div class="nav"><button id="prevCircuit">← Circuit</button><button class="center" id="nextCircuit">Next Circuit →</button><button id="reset">Reset</button></div></div>
+<script>
+const E=(name,dose,cue)=>({name,dose,cue});
+const exerciseInfo={
+'Arm Circles':{img:'https://mvdivas.com/wp-content/uploads/2020/09/divafitness-circulos-con-los-brazos.jpg',src:'Mvdivas',url:'https://mvdivas.com/5-ejercicios-para-combatir-la-flacidez-en-los-brazos/',how:'Stand tall with both arms extended at shoulder height. Make controlled circles from the shoulder, gradually increasing the circle size. Reverse direction halfway through.',focus:'Shoulder mobility and upper-body warm-up.',avoid:'Keep your neck relaxed and ribs stacked. Do not shrug or turn the movement into fast, uncontrolled swings.'},
+'Band Pull-Aparts / Light Rows':{img:'https://getfitcraft.com/images/exercises/pull-apart-proper-form.webp',src:'FitCraft',url:'https://getfitcraft.com/exercises/pull-apart',how:'Hold the band at chest height with straight arms. Pull the hands apart until the band approaches the chest and the shoulder blades squeeze together, then return slowly.',focus:'Rear shoulders, upper back and scapular control.',avoid:'Do not arch the lower back, shrug the shoulders or bend the elbows excessively.'},
+'Push-Up → Downward Dog':{img:'https://api.bmag.com.tr/api/bmag-images/images/2020/04/22-e1588002777225.jpg',src:'Bmag',url:'https://bmag.com.tr/haber/bir-beden-incelmek-icin-evde-kolayca-yapilabilecek-egzersiz-hareketleri',how:'Complete a controlled push-up, then press the floor away and send the hips up and back into downward dog. Return to plank and repeat.',focus:'Chest and triceps activation plus shoulder, calf and hamstring mobility.',avoid:'Keep the push-up body line strong and avoid collapsing through the shoulders during the transition.'},
+'Shoulder Rolls + Torso Twists':{img:'https://www.silversneakers.com/wp-content/uploads/2017/07/SSBlogExercise_TorsoRotationNoWeight.jpg',src:'SilverSneakers',url:'https://www.silversneakers.com/blog/travel-workout/',how:'Roll the shoulders slowly forward and backward, then rotate the torso from side to side while keeping the hips mostly forward.',focus:'Shoulders and thoracic-spine mobility.',avoid:'Keep the movement comfortable and controlled; do not force the lower back into rotation.'},
+'Dumbbell Bench Press':{img:'https://www.newbodyplan.co.uk/wp-content/uploads/2021/02/Dumbbell-bench-press.jpg',src:'New Body Plan',url:'https://www.newbodyplan.co.uk/training/chest/move-masterclass-the-dumbbell-bench-press/',how:'Lie on the bench with feet planted. Set the shoulder blades back and down, lower the dumbbells toward the chest under control, then press them upward.',focus:'Chest, triceps and anterior shoulders.',avoid:'Do not let the shoulders roll forward or bounce the weights at the bottom.'},
+'Push-Ups':{img:'https://cdn.thehinh.com/2016/11/Hit-dat-sai-cach.jpg',src:'TheHinh',url:'https://www.thehinh.com/2016/11/huong-dan-hit-dat-cho-nguoi-moi-tap-dung-cach.html',how:'Start in a high plank. Bend the elbows and lower the chest toward the floor while maintaining a straight body line, then press back up.',focus:'Chest, triceps, shoulders and core.',avoid:'Avoid sagging hips, flared elbows and a forward-jutting head.'},
+'Dumbbell Shoulder Press':{img:'https://cdn.facet.onet.pl/1/QkSk9lLaHR0cDovL29jZG4uZXUvaW1hZ2VzL3B1bHNjbXMvWkdFN01EQV8vNTc5ZDE4MmM5MTFkNTNkNDZjNzg1Zjc0ZGQzMjAwNzYuanBnkZUCzQNIAMLD3gACoTAHoTEE',src:'Facet / Onet',url:'https://facet.onet.pl/fitness/trening-silowy-dla-poczatkujacych/jfvfycw',how:'Brace the core with the dumbbells at shoulder height. Press vertically overhead until the arms are extended, then lower with control.',focus:'Deltoids and triceps.',avoid:'Do not flare the ribs or turn the press into a lower-back extension.'},
+'Bench / Box Dips':{img:'https://post.healthline.com/wp-content/uploads/2018/12/Dips.gif',src:'Healthline',url:'https://www.healthline.com/health/fitness-exercise/bench-dips',how:'Place hands on the edge of a stable bench or box. Keep the torso close to the bench as you bend the elbows and lower, then press back to the start.',focus:'Triceps with assistance from the chest and shoulders.',avoid:'Avoid drifting far away from the bench or forcing the shoulder into an uncomfortable depth.'},
+'Single-Arm Dumbbell Row':{img:'https://daman.co.id/_next/image?q=100&url=https%3A%2F%2Fbackend.daman.co.id%2Fwp-content%2Fuploads%2F2023%2F02%2FMicrosoftTeams-image_2_90411cba-7995-4fac-8f20-af7caa6406a0.png&w=1200',src:'DA MAN',url:'https://daman.co.id/how-to-do-a-single-arm-dumbbell-row-correctly-and-safely',how:'Brace one hand on a bench, hinge with a neutral spine, then pull the dumbbell toward the hip. Lower until the arm is long and repeat.',focus:'Lats, mid-back and biceps.',avoid:'Keep the hips square; do not rotate the torso to lift the weight.'},
+'Pull-Ups / Inverted Rows':{img:'https://getfitcraft.com/images/exercises/inverted-rows-proper-form.webp',src:'FitCraft',url:'https://getfitcraft.com/exercises/inverted-rows',how:'For an inverted row, keep the body rigid and pull the chest toward the bar. For a pull-up, begin from a controlled hang and pull the chest toward the bar.',focus:'Lats, upper back and biceps.',avoid:'Avoid shrugging, kicking or losing the straight body position.'},
+'Dumbbell Biceps Curl':{img:'https://bod-blog-assets.prod.cd.beachbodyondemand.com/bod-blog/wp-content/uploads/2017/07/Bicep-Curl.jpg',src:'Beachbody / BODi',url:'https://ozhelp.org.au/blog/health/7-common-exercise-mistakes-and-how-to-correct-them.html',how:'Stand tall with dumbbells at the sides. Keep the upper arms quiet while bending the elbows to curl the weights, then lower slowly.',focus:'Biceps.',avoid:'Do not swing the torso or let the elbows travel far forward.'},
+'Reverse Snow Angels':{img:'https://tarzanweb.jp/uploads/2022/12/846_18-004.jpg',src:'Tarzan Web',url:'https://tarzanweb.jp/post-280391',how:'Lie face down with the chest lightly lifted. Sweep straight arms in a wide arc from overhead toward the hips, then return.',focus:'Upper back, rear shoulders and postural muscles.',avoid:'Use a small controlled lift; do not crank the neck or overextend the lower back.'},
+'Lateral Raise':{img:'https://womensfitness.co.uk/wp-content/uploads/sites/3/2022/07/how-to-do-a-lateral-raise-step-by-step-guide-form-technique.jpg',src:"Women's Fitness",url:'https://womensfitness.co.uk/workouts/lateral-raise-form-guide/',how:'Stand tall with a light dumbbell in each hand. With soft elbows, lift the arms out to the sides to about shoulder height and lower slowly.',focus:'Side deltoids.',avoid:'Do not shrug or swing the weights; lighter weight and control are preferable.'},
+'Plank Shoulder Taps':{img:'https://www.mensfitclub.com/wp-content/uploads/2025/04/Plank-Shoulder-Taps.jpg',src:"Men's Fit Club",url:'https://www.mensfitclub.com/mens-fitness/incline-bench-press-workout-for-strength-and-muscle-growth/',how:'Hold a high plank with feet slightly wider than normal. Lift one hand to tap the opposite shoulder, replace it, and alternate.',focus:'Core anti-rotation and shoulder stability.',avoid:'Minimize hip rotation and keep the hips from sagging.'},
+'Hammer Curl':{img:'https://weriselatam.com/wp-content/uploads/2020/09/Curl-martillo.jpg',src:'We Rise',url:'https://weriselatam.com/we-workout/como-hacer-crecer-los-biceps/',how:'Hold dumbbells with palms facing each other. Curl by bending the elbows while maintaining the neutral grip, then lower under control.',focus:'Biceps, brachialis and forearms.',avoid:'Keep the elbows close to the torso and avoid using momentum.'},
+'Pike Push-Up':{img:'https://getfitcraft.com/images/exercises/pike-push-ups-proper-form.webp',src:'FitCraft',url:'https://getfitcraft.com/exercises/pike-push-ups',how:'Begin in an inverted-V position with hips high. Bend the elbows and lower the head toward the floor between the hands, then press away.',focus:'Shoulders and triceps.',avoid:'Keep the hips high and avoid turning the movement into a standard push-up.'},
+'Renegade Row':{img:'https://www.projectinvictus.it/wp-content/uploads/2023/04/48-scaled.jpg',src:'Project inVictus',url:'https://www.projectinvictus.it/renegade-row/',how:'Start in a wide-foot plank with hands on dumbbells. Brace hard and row one dumbbell toward the ribs while the opposite arm supports you. Alternate sides.',focus:'Back, arms and anti-rotation core strength.',avoid:'Keep the pelvis level; reduce the load if the torso twists excessively.'},
+'Mountain Climbers':{img:'https://tarzanweb.jp/uploads/2021/05/19/0023-w1280.jpg',src:'Tarzan Web',url:'https://tarzanweb.jp/post-234027',how:'From a high plank, alternate driving one knee toward the chest while the other leg extends back.',focus:'Core, shoulders and conditioning.',avoid:'Keep shoulders over the wrists and avoid bouncing the hips high.'},
+'Forearm Plank':{img:'https://coahuila.elsiglo.mx/i/2019/08/928416.jpeg',src:'El Siglo Coahuila',url:'https://www.elsiglocoahuila.mx/noticia/2019/como-hacer-una-plancha-abdominal-correctamente.html',how:'Place elbows beneath the shoulders and extend the legs. Brace the abdomen and glutes to maintain a straight line from head to heels.',focus:'Core endurance and whole-body bracing.',avoid:'Do not let the hips sag or pike upward; keep the neck neutral.'},
+'Chest Opener Stretch':{img:'https://parade.com/.image/t_share/MTkwNTgxMDIzNTI1MDUzNTY1/chest-opener.png',src:'Parade / TheraNow',url:'https://parade.com/1170876/kaitlin-vogel/posture-exercises/',how:'Stand tall and draw the shoulders back. Clasp the hands behind the body and gently lift or reach them away while opening the chest.',focus:'Chest and anterior shoulders.',avoid:'Do not compensate by aggressively arching the lower back.'},
+'Cross-Body Shoulder Stretch':{img:'https://p19-lemon8-sign-useast5.tiktokcdn-us.com/tos-useast5-v-3931-tx/o0vAgiNI9gASiOgpHFbYCa4jI5AJEKAkEBSKr~tplv-pyavlv3z7u-text-logo%3AQGd1dXV0aWVycnJleg%3D%3D%3Aq75.jpeg?lk3s=c7f08e79&source=lemon8_seo&x-expires=1773381600&x-signature=14h%2FQv4dbip5CYbcy11lc7HQofQ%3D',src:'Lemon8',url:'https://www.lemon8-app.com/%40guuutierrrez/7535240357898994190?region=us',how:'Bring one straight arm across the chest and use the opposite arm to gently draw it closer.',focus:'Rear shoulder and upper back.',avoid:'Keep the stretched shoulder down rather than shrugging it toward the ear.'},
+'Overhead Triceps Stretch':{img:'https://homegymmentor.com/wp-content/uploads/2024/09/home-gym-triceps-stretch-flexibility-scaled.jpg',src:'Home Gym Mentor',url:'https://homegymmentor.com/stretching/',how:'Reach one arm overhead, bend the elbow so the hand drops behind the head, and use the opposite hand for gentle assistance.',focus:'Triceps and shoulder mobility.',avoid:'Keep the ribs down and avoid pulling aggressively on the elbow.'},
+'Bodyweight Squats':{img:'https://hips.hearstapps.com/hmg-prod/images/squat-jump-squat-178-1653334247.jpg?crop=0.574xw%3A0.863xh%3B0.204xw%2C0.137xh&resize=1200%3A%2A',src:"Runner's World",url:'https://www.runnersworld.com/training/a70113115/how-to-squat-variations-form-tips/',how:'Stand with feet around shoulder width. Sit the hips down and back as the knees bend, keeping the whole foot grounded, then stand tall.',focus:'Quads, glutes and hips.',avoid:'Keep knees tracking with the toes and avoid letting the heels lift.'},
+'Walking Lunges':{img:'https://i.pinimg.com/originals/b4/a2/02/b4a2020403b4090b15b91acd78ddfd5c.png',src:'Pinterest reference image',url:'https://www.pinterest.com/pin/700098704556401186/',how:'Step forward into a lunge and lower both knees under control. Drive through the front foot and step directly into the next lunge.',focus:'Quads, glutes, hamstrings and balance.',avoid:'Keep the torso tall and avoid allowing the front knee to collapse inward.'},
+'Glute Bridges':{img:'https://orthopelvicpt.com/wp-content/uploads/2023/02/Common-Exercises-2.jpg',src:'Orthopelvic Physical Therapy',url:'https://orthopelvicpt.com/what-common-exercises-you-are-probably-doing-wrong-and-how-to-correct-them/',how:'Lie on your back with knees bent and feet planted. Brace the abdomen, squeeze the glutes and lift the hips until the body forms a straight line from shoulders to knees.',focus:'Glutes and posterior chain.',avoid:'Do not hyperextend the lower back at the top.'},
+'Glute Bridge':{img:'https://orthopelvicpt.com/wp-content/uploads/2023/02/Common-Exercises-2.jpg',src:'Orthopelvic Physical Therapy',url:'https://orthopelvicpt.com/what-common-exercises-you-are-probably-doing-wrong-and-how-to-correct-them/',how:'Lie on your back with knees bent and feet planted. Brace the abdomen, squeeze the glutes and lift the hips until the body forms a straight line from shoulders to knees.',focus:'Glutes and posterior chain.',avoid:'Do not hyperextend the lower back at the top.'},
+'Leg Swings':{img:'https://happyhealthy.nl/wp-content/uploads/leg-swing.jpg',src:'HappyHealthy',url:'https://happyhealthy.nl/warming-up-hardlopen/',how:'Stand tall with light support if needed and swing one leg forward and backward through a comfortable range. Switch legs.',focus:'Dynamic hip mobility.',avoid:'Keep the torso quiet rather than creating range by arching and twisting.'},
+'Hip Circles':{img:'https://cdn.livelighter.com.au/assets/img/physical-activity/mobility/hip-circles.png?height=400&width=400',src:'LiveLighter',url:'https://livelighter.com.au/news/5-x-5-x-5-to-boost-mobility',how:'Stand with hands on the hips and slowly draw large circles with the pelvis in both directions.',focus:'Hip and lower-back mobility.',avoid:'Stay controlled and pain-free; do not force the range.'},
+'Goblet Squat':{img:'https://janhitbharat.com/featured_images/a-beginner-athlete-performing-a-proper-goblet-squat-with-guidance-on-alignment-and-form-1773463645.jpg',src:'Janhit Bharat',url:'https://janhitbharat.com/en/news/5-essential-strength-training-exercises-beginners-2026',how:'Hold one dumbbell vertically at the chest. Sit into the squat with the chest tall and knees tracking over the toes, then drive through the whole foot to stand.',focus:'Quads and glutes with core stabilization.',avoid:'Do not let the knees cave inward or the heels rise.'},
+'Jump Squat':{img:'https://getfitcraft.com/images/exercises/jump-squats-proper-form.webp',src:'FitCraft',url:'https://getfitcraft.com/exercises/jump-squats',how:'Load into a squat, drive explosively through the floor and extend the hips, knees and ankles. Land softly and absorb the landing into the next rep.',focus:'Lower-body power.',avoid:'Prioritize quiet, controlled landings and keep knees aligned with the toes.'},
+'Bulgarian Split Squat':{img:'https://p16-lemon8-va-sign.tiktokcdn-us.com/tos-maliva-v-ac5634-us/o0XcbIKcOISArAC0jEXFGBfEQjDAMBHBggfEeE~tplv-tej9nj120t-text-logo%3AQGFkdmVudHVyaW5nd2l0aGhhbm5haA%3D%3D%3Aq75.jpeg?lk3s=c7f08e79&source=lemon8_seo&x-expires=1778047200&x-signature=Pyg5PY%2F6KqRGa4cumMxPEWDos%2FI%3D',src:'Lemon8',url:'https://www.lemon8-app.com/%40adventuringwithhannah/7434958085157913143?region=us',how:'Place the rear foot on a bench and establish a stable front-foot position. Lower mostly straight down through the front hip and knee, then drive back up.',focus:'Quads and glutes with unilateral stability.',avoid:'Keep the front knee tracking cleanly and avoid pushing primarily from the rear leg.'},
+'Wall Sit':{img:'https://i.pinimg.com/originals/cc/75/ac/cc75acf2dcc7b011906e56dcd034c81e.png',src:'Pinterest reference image',url:'https://www.pinterest.com/pin/443956475765124052/',how:'Slide down a wall until the knees and hips are near a right angle. Keep the back supported and feet firmly planted.',focus:'Isometric quad and glute endurance.',avoid:'Do not let the knees collapse inward or shift excessive pressure onto the toes.'},
+'Dumbbell Romanian Deadlift':{img:'https://steelfactor.ru/uploads/exercises/370_1.jpg',src:'SteelFactor',url:'https://steelfactor.ru/exercise/370',how:'Hold dumbbells in front of the thighs. Soften the knees and push the hips backward while keeping a neutral spine and weights close to the legs. Stand by driving the hips forward.',focus:'Hamstrings, glutes and hip-hinge strength.',avoid:'Do not turn it into a squat or round the back to reach lower.'},
+'Single-Leg RDL':{img:'https://lubomirivanov.com/wp-content/uploads/2024/10/single-leg-DB-RDL.png',src:'Lubomir Ivanov',url:'https://lubomirivanov.com/13903/',how:'Balance on one leg, hinge at the hip and reach the free leg behind you as the torso tips forward. Return to standing by squeezing the standing-side glute.',focus:'Hamstrings, glutes, balance and hip stability.',avoid:'Keep the hips square rather than opening the free-side hip toward the ceiling.'},
+'Hamstring Walkout':{img:'https://womensfitness.co.uk/wp-content/uploads/sites/3/2020/12/hamstring-walkouts.jpg',src:"Women's Fitness",url:'https://womensfitness.co.uk/workouts/15-minute-workout/',how:'Begin in a glute bridge. Keep the hips elevated while taking small heel steps away from the body, then walk the feet back in.',focus:'Hamstrings and glutes.',avoid:'Shorten the walkout if the hips drop or the lower back takes over.'},
+'Lateral Lunge':{img:'https://www.trainwithedge.com/challenge-lateral-lunge.png',src:'Edge Athletics',url:'https://www.trainwithedge.com/',how:'Take a wide step to the side, push the hips back over the working leg and keep the opposite leg long. Drive through the working foot to return.',focus:'Glutes, quads and adductors.',avoid:'Keep the whole working foot planted and the knee tracking over the toes.'},
+'Dumbbell Step-Up':{img:'https://static.sportzbusiness.com/uploads/2020/12/Dumbbell-Step-Up.jpg',src:'SportzBusiness',url:'https://www.sportzbusiness.com/best-dumbbell-lower-body-workout-to-give-you-powerful-legs/',how:'Place one foot fully on a stable box or bench. Drive through that leg to stand on the platform, then lower under control.',focus:'Quads, glutes and single-leg strength.',avoid:'Avoid launching off the trailing foot or using an unstable platform.'},
+'Skater Jump':{img:'https://www.mensjournal.com/.image/MTk2MTM2ODA3MTkzNTg1MTU3/skater.jpg?io=1&profile=share4-3',src:"Men's Journal",url:'https://www.mensjournal.com/health-fitness/super-high-intensity-workouts-to-get-fit-in-5-minutes-or-less',how:'Push laterally off one leg and land softly on the opposite leg, allowing the trailing leg to sweep behind. Repeat side to side.',focus:'Lateral power, glutes and balance.',avoid:'Absorb each landing through the hip and knee; avoid a stiff-legged landing.'},
+'Single-Leg Calf Raise':{img:'https://hips.hearstapps.com/hmg-prod/images/single-leg-calf-raise-64fb4cd0ceb62.jpeg?crop=0.803xw%3A0.952xh%3B0.121xw%2C0.0211xh&resize=980%3A%2A',src:'Bicycling',url:'https://www.bicycling.com/training/a45119124/ankle-strengthening-exercises/',how:'Balance on one leg and rise onto the ball of the foot as high as comfortably possible. Pause briefly and lower through a full range.',focus:'Calves and ankle stability.',avoid:'Keep the ankle from rolling outward or inward and avoid bouncing.'},
+'Sumo Squat Hold':{img:'https://i.pinimg.com/originals/c9/4c/43/c94c438bde3270791ec72404423ec3a0.jpg',src:'Pinterest / Herbalife reference',url:'https://www.pinterest.com/pin/429530883211746076/',how:'Take a wide stance with toes turned slightly outward. Sit into a deep squat and hold while keeping the chest tall and knees tracking over the toes.',focus:'Quads, glutes and inner thighs.',avoid:'Keep the knees aligned with the toes and maintain pressure through the whole foot.'},
+'Squat Pulses':{img:'https://redefiningstrength.com/wp-content/uploads/2015/06/squat-pulses-e1435208484324.jpg',src:'Redefining Strength',url:'https://redefiningstrength.com/squat-variations',how:'Hold the lower portion of a squat and move through a small controlled up-and-down range without fully standing.',focus:'Continuous quad and glute tension.',avoid:'Keep the chest controlled and do not allow the knees to collapse inward.'},
+'Glute Bridge Hold':{img:'https://s.yimg.com/ny/api/res/1.2/iWqNjkhXNvVVQRpG_TEfPw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyNDI7aD0xMjQy/https%3A/media.zenfs.com/en/aol_the_today_show_594/afd54c23a59d556d0f9c55394d03d3f7',src:'AOL / Today',url:'https://www.aol.com/articles/isometric-exercises-8-beginner-friendly-170001615.html',how:'Lift into a bridge and maintain the top position with glutes squeezed, ribs down and feet planted.',focus:'Isometric glute and posterior-chain endurance.',avoid:'Hold with the glutes rather than arching the lower back.'},
+'Standing Quad Stretch':{img:'https://hips.hearstapps.com/hmg-prod/images/standing-quad-stretch240-preview-maxwidth-3000-maxheight-3000-ppi-300-quality-85-642dcd0147ed5.jpg?crop=1.00xw%3A0.891xh%3B0%2C0.0249xh&resize=980%3A%2A',src:"Runner's World",url:'https://www.runnersworld.com/training/a43521252/quad-stretches/',how:'Stand tall, bend one knee and bring the heel toward the glute. Hold the ankle and gently draw the knee downward while keeping the thighs aligned.',focus:'Quadriceps and hip flexor stretch.',avoid:'Keep the pelvis neutral and avoid pulling the knee far behind the body.'},
+'Seated Hamstring Stretch':{img:'https://physiovisuals.com/wp-content/uploads/2024/07/Hamstring-stretch-sitting_page_1.png',src:'Physio Visuals',url:'https://physiovisuals.com/sit-to-stand-exercise/',how:'Extend one leg and hinge forward from the hips toward the foot while keeping the knee comfortably straight.',focus:'Hamstrings.',avoid:'Think long spine rather than rounding aggressively to reach the toes.'},
+'Figure-4 Glute Stretch':{img:'https://s3.amazonaws.com/prod.skimble/assets/3133144/image_iphone.jpg',src:'Skimble',url:'https://www.skimble.com/exercises/111844-supine-figure-4-glute-stretch-how-to-do-exercise',how:'Lie on your back, cross one ankle over the opposite thigh, and gently draw the supporting leg toward the chest.',focus:'Glutes and deep hip rotators.',avoid:'Keep the head and shoulders relaxed and stop if the knee feels pinched.'},
+'Calf Stretch':{img:'https://1.bp.blogspot.com/-1wISQpidzDI/YBmrmLBRW5I/AAAAAAAAAm8/9jGuorhHY1oWI7C8mIVdXLFEIkWEsEycQCLcBGAsYHQ/s738/CALF%2BSTRETCH-1.jpg',src:'OHSE',url:'https://www.ohse.in/2021/02/calf-muscle-stretch-exercise.html',how:'Place hands on a wall, step one leg back and press the back heel toward the floor while keeping the leg long.',focus:'Calf and ankle mobility.',avoid:'Keep the back foot pointing mostly forward and the heel grounded.'},
+'World’s Greatest Stretch + Rotation':{img:'https://s3.amazonaws.com/prod.skimble/assets/3206223/image_iphone.jpg',src:'Skimble',url:'https://www.skimble.com/exercises/113851-kneeling-thoracic-rotation-how-to-do-exercise',how:'Step into a long lunge, place the inside hand near the front foot and rotate the opposite arm toward the ceiling. Switch sides.',focus:'Hips, thoracic spine and shoulders.',avoid:'Rotate through the upper back while keeping the front foot firmly planted.'},
+'Deep Squat + Reach':{img:'https://static.wixstatic.com/media/44e42b_e57bc9b1a83b40ff88b2b5e1a9e3226e~mv2.jpg/v1/fill/w_980%2Ch_1304%2Cal_c%2Cq_85%2Cusm_0.66_1.00_0.01%2Cenc_avif%2Cquality_auto/44e42b_e57bc9b1a83b40ff88b2b5e1a9e3226e~mv2.jpg',src:'Green Note Fitness',url:'https://www.greennotefitness.com/single-post/reflections-body-mind-and-spirit-mobility-reading-and-connection',how:'Sit into a comfortable deep squat. Keep one hand near the floor while rotating the opposite arm upward. Alternate sides.',focus:'Hip, ankle and thoracic mobility.',avoid:'Keep both feet grounded and rotate within a comfortable range.'},
+'Downward Dog → Cobra Flow':{img:'https://assets-global.website-files.com/5f53cce3cf2fb62eb37d5907/604471dd158b33eff5bc1f78_Plank-to-Downward-Dog-2.jpg',src:'Web exercise reference',url:'https://storage.googleapis.com/dfcfhsqaepawbe/difference-between-downward-dog-and-plank.html',how:'Move from downward dog forward through plank, then gently open the chest into cobra/upward-facing extension before returning to downward dog.',focus:'Shoulders, spine, chest, hamstrings and calves.',avoid:'Keep the transition smooth and avoid forcing lumbar extension in cobra.'},
+'90/90 Hip Switches':{img:'https://s3assets.skimble.com/assets/2498549/image_full.jpg',src:'Skimble / The Physio Fix',url:'https://www.skimble.com/exercises/75099-9090-hip-switches-how-to-do-exercise',how:'Sit with both knees bent and feet wider than the hips. Rotate both knees together from one side to the other, moving between 90/90 positions.',focus:'Hip internal and external rotation.',avoid:'Move slowly and use the hands for support if needed rather than forcing the range.'},
+'Goblet Squat Pry':{img:'https://imagedelivery.net/RsSkIR2z84O3esWR-3mvLg/7580cbc5-b0ac-4813-1fbd-497d800cd900/public',src:'Kettlebell Monster',url:'https://kettlebell.monster/learn/goblet-squat-prying',how:'Hold a light weight in the goblet position and sink into a deep squat. Use the elbows inside the knees and gently shift side to side.',focus:'Hips, groin and ankle mobility.',avoid:'Stay tall and use a light load; this is a mobility drill, not a maximal squat.'},
+'Light RDL → Overhead Reach':{img:'https://steelfactor.ru/uploads/exercises/370_1.jpg',src:'SteelFactor — RDL reference',url:'https://steelfactor.ru/exercise/370',how:'Perform a light Romanian deadlift by hinging the hips back. Stand tall, then continue into a controlled overhead reach before beginning the next hinge.',focus:'Hamstrings, hips, shoulders and full-body mobility.',avoid:'Keep the hinge separate from the reach; do not arch the lower back to create overhead range.'},
+'Reverse Lunge → Rotation':{img:'https://s3assets.skimble.com/assets/1714796/image_iphone.jpg',src:'Skimble',url:'https://www.skimble.com/exercises/42558-reverse-lunge-rotations-how-to-do-exercise',how:'Step backward into a reverse lunge, stabilize, then rotate the torso toward the front leg. Return to center and stand before switching sides.',focus:'Hip mobility, leg stability and thoracic rotation.',avoid:'Keep the front knee stable and rotate through the upper torso rather than twisting the knee.'},
+'Half-Kneeling Dumbbell Halo':{img:'https://hips.hearstapps.com/hmg-prod/images/half-kneeling-halo-6425973fc0ee0.jpg',src:"Runner's World",url:'https://www.runnersworld.com/training/a43459816/dumbbell-core-strengthening-exercises/',how:'From a half-kneeling position, hold one light dumbbell close to the head and slowly circle it around the head in both directions.',focus:'Shoulder mobility and core stability.',avoid:'Keep the ribs stacked and torso still; use a light weight.'},
+'Bear Plank → Downward Dog':{img:'https://assets-global.website-files.com/5f53cce3cf2fb62eb37d5907/604471dd158b33eff5bc1f78_Plank-to-Downward-Dog-2.jpg',src:'Web exercise reference',url:'https://storage.googleapis.com/dfcfhsqaepawbe/difference-between-downward-dog-and-plank.html',how:'Begin in a compact bear-plank position, press the floor away and send the hips back and up toward downward dog, then return under control.',focus:'Shoulder stability, core control and posterior-chain mobility.',avoid:'Keep the movement controlled and do not let the shoulders collapse toward the ears.'},
+'Cossack Squat':{img:'https://s3.amazonaws.com/prod.skimble/assets/1410382/image_iphone.jpg',src:'Skimble',url:'https://www.skimble.com/exercises/30184-cossack-squat-how-to-do-exercise',how:'Take a very wide stance and shift into one hip while bending that knee and keeping the opposite leg long. Alternate sides.',focus:'Adductors, hips, ankles and lateral leg strength.',avoid:'Keep the working foot planted and only go as deep as you can control.'},
+'Glute Bridge → Dumbbell Pullover':{img:'https://www.indoindians.com/wp-content/uploads/2023/11/A-Rapid-15-Minute-Workout-Routine-You-Must-Try-Glute-Bridge-Hold-With-Pullover.webp',src:'IndoIndians',url:'https://www.indoindians.com/a-rapid-15-minute-workout-routine-you-must-try/',how:'Hold a glute bridge while keeping the ribs controlled. With both hands on one light dumbbell, lower the weight behind the head and pull it back over the chest.',focus:'Glutes and core with shoulder/lat mobility.',avoid:'Keep the bridge steady and stop the pullover before the ribs flare or shoulders feel strained.'},
+'Child’s Pose + Side Reach':{img:'https://www.yogarenewteachertraining.com/wp-content/uploads/2023/01/Extended-Childs-Pose-2-with-Side-Stretch-2048x1536.jpg',src:'YogaRenew',url:'https://www.yogarenewteachertraining.com/weekly-class-theme-solar-plexus/',how:'Sit the hips toward the heels with arms long. Walk both hands to one side to lengthen the opposite side body, then switch.',focus:'Lats, shoulders and side body.',avoid:'Breathe normally and do not force the hips toward the heels.'},
+'Thread the Needle — Left':{img:'https://images.ctfassets.net/hjcv6wdwxsdz/rEbtrbEaunbLKYyHBtQxl/a58d1f42bc2c2c930168431450f87ab6/thread-the-needle-claire-hold-other.png',src:'Hinge Health',url:'https://www.hingehealth.com/resources/articles/thread-the-needle/',how:'From all fours, slide the left arm underneath the right arm and rotate the upper back until the left shoulder approaches the floor.',focus:'Thoracic spine and rear shoulder.',avoid:'Keep the hips relatively centered rather than shifting far to one side.'},
+'Thread the Needle — Right':{img:'https://images.ctfassets.net/hjcv6wdwxsdz/rEbtrbEaunbLKYyHBtQxl/a58d1f42bc2c2c930168431450f87ab6/thread-the-needle-claire-hold-other.png',src:'Hinge Health',url:'https://www.hingehealth.com/resources/articles/thread-the-needle/',how:'From all fours, slide the right arm underneath the left arm and rotate the upper back until the right shoulder approaches the floor.',focus:'Thoracic spine and rear shoulder.',avoid:'Keep the hips relatively centered rather than shifting far to one side.'},
+'Deep Squat Hold':{img:'https://s3assets.skimble.com/assets/3250259/image_full.jpg',src:'Skimble',url:'https://www.skimble.com/exercises/52542-deep-squat-hold-how-to-do-exercise',how:'Sit into the deepest comfortable squat you can maintain with the feet grounded. Use the elbows inside the knees if helpful and breathe steadily.',focus:'Hips, ankles and groin.',avoid:'Do not force depth or allow painful pinching in the hips or knees.'}
+};
+function infoFor(name){return exerciseInfo[name]||{img:'',src:'',url:'',how:'Move through the exercise slowly and under control, using the coaching cue shown on the workout card.',focus:'Controlled movement and the target muscles for this exercise.',avoid:'Use a pain-free range of motion and stop if form breaks down.'}}
+function openExerciseInfo(i,ev){if(ev){ev.stopPropagation();ev.preventDefault()}const e=getCircuit().ex[i],d=infoFor(e.name);document.getElementById('exerciseModalTitle').textContent=e.name;document.getElementById('exerciseModalDose').textContent=e.dose;const im=document.getElementById('exerciseModalImage');im.src=d.img;im.alt=e.name+' demonstration';im.style.display=d.img?'block':'none';document.getElementById('exerciseModalHow').textContent=d.how;document.getElementById('exerciseModalFocus').textContent=d.focus;document.getElementById('exerciseModalAvoid').textContent=d.avoid;document.getElementById('exerciseModalSource').innerHTML=d.url?`Reference image: <a href="${d.url}" target="_blank" rel="noopener">${d.src}</a>`:'Reference image unavailable';document.getElementById('exerciseModal').classList.add('show')}
+function closeExerciseInfo(){document.getElementById('exerciseModal').classList.remove('show')}
+
+const workouts={
+'upper-a':{modality:'upper',name:'Workout A — Push/Pull Strength',description:'Balanced chest, back, shoulders and arms using weights and body weight.',tags:['45 min','Strength','Upper Body'],title:'Upper Body A · 45 min',goal:'45:00',circuits:[
+{name:'Warm-Up',rounds:1,rest:0,note:'1 minute per movement. Move continuously through the warm-up.',ex:[E('Arm Circles','1 min','Switch direction halfway. Relax shoulders and gradually increase range.'),E('Band Pull-Aparts / Light Rows','1 min','Squeeze shoulder blades together.'),E('Push-Up → Downward Dog','1 min','Move smoothly between positions.'),E('Shoulder Rolls + Torso Twists','1 min','Stay relaxed and controlled.')]},
+{name:'Strength Block 1 — Push',rounds:3,rest:45,note:'Complete all four exercises once. Rest as needed, then repeat for 3 total rounds.',ex:[E('Dumbbell Bench Press','10–12 reps','Chest up · shoulder blades set · control the lowering phase'),E('Push-Ups','12–15 reps','Straight line from shoulders to heels · elbows about 45°'),E('Dumbbell Shoulder Press','10–12 reps','Ribs down · press vertically · finish tall'),E('Bench / Box Dips','12–15 reps','Shoulders down and back · lower under control')]},
+{name:'Strength Block 2 — Pull',rounds:3,rest:45,note:'Complete all four exercises once, then repeat the circuit for 3 total rounds.',ex:[E('Single-Arm Dumbbell Row','10 / side','Square hips · pull elbow toward back pocket'),E('Pull-Ups / Inverted Rows','6–10 reps','Lead with chest · control the descent'),E('Dumbbell Biceps Curl','12 reps','Keep elbows quiet · no swinging'),E('Reverse Snow Angels','12–15 reps','Move slowly · squeeze upper back')]},
+{name:'Arm & Shoulder Burn',rounds:4,rest:30,note:'Complete all four movements, then repeat for 4 total rounds.',ex:[E('Lateral Raise','12 reps','Soft elbows · lift to shoulder height'),E('Plank Shoulder Taps','20 taps','Resist hip rotation'),E('Hammer Curl','12 reps','Neutral grip · controlled tempo'),E('Pike Push-Up','8–10 reps','Hips high · press floor away')]},
+{name:'Core & Finisher',rounds:2,rest:20,note:'Minimal rest. Complete all three exercises for 2 total rounds.',ex:[E('Renegade Row','30 sec','Feet wide · brace hard · alternate rows under control'),E('Mountain Climbers','30 sec','Shoulders over wrists'),E('Forearm Plank','45 sec','Squeeze glutes · breathe behind the brace')]},
+{name:'Cooldown',rounds:1,rest:0,note:'About 2 minutes total.',ex:[E('Chest Opener Stretch','30–40 sec','Relax into the stretch'),E('Cross-Body Shoulder Stretch','30 sec / side','Keep shoulder down'),E('Overhead Triceps Stretch','30 sec / side','Stay tall')]}]},
+'lower-a':{modality:'lower',name:'Workout A — Total Lower Body',description:'Balanced squat, hinge, unilateral strength and lower-body conditioning.',tags:['45 min','Strength','Lower Body'],title:'Lower Body A · 45 min',goal:'45:00',circuits:[
+{name:'Warm-Up',rounds:1,rest:0,note:'1 minute per movement for a 5-minute warm-up.',ex:[E('Bodyweight Squats','1 min','Sit between the hips · smooth controlled reps'),E('Walking Lunges','1 min','Control each step · alternate legs'),E('Glute Bridges','1 min','Squeeze at the top'),E('Leg Swings','1 min','Switch legs/direction as needed · use a comfortable range'),E('Hip Circles','1 min','Move slowly in both directions')]},
+{name:'Strength Block 1 — Squat',rounds:3,rest:45,note:'Complete each exercise once, then repeat for 3 total rounds.',ex:[E('Goblet Squat','12 reps','Stay tall · knees track over toes'),E('Jump Squat','10 reps','Land softly · reset balance'),E('Bulgarian Split Squat','10 / leg','Descend vertically · drive through whole foot'),E('Wall Sit','40 sec','Back flat · steady breathing')]},
+{name:'Strength Block 2 — Posterior Chain',rounds:3,rest:45,note:'Complete each exercise once, then repeat for 3 total rounds.',ex:[E('Dumbbell Romanian Deadlift','12 reps','Push hips back · keep weights close'),E('Glute Bridge','15 reps','Ribs down · squeeze glutes'),E('Single-Leg RDL','10 / leg','Hips stay square'),E('Hamstring Walkout','10 reps','Keep hips elevated')]},
+{name:'Athletic Burn',rounds:4,rest:30,note:'Complete all four movements, then repeat for 4 total rounds.',ex:[E('Lateral Lunge','10 / side','Sit into one hip'),E('Dumbbell Step-Up','10 / leg','Drive through lead leg'),E('Skater Jump','20 total','Land softly · stabilize'),E('Single-Leg Calf Raise','15 / leg','Full stretch · pause at top')]},
+{name:'Lower-Body Finisher',rounds:2,rest:20,note:'Minimal rest. Complete all four exercises for 2 total rounds.',ex:[E('Sumo Squat Hold','45 sec','Wide stance · knees out'),E('Squat Pulses','30 sec','Stay low · short range'),E('Glute Bridge Hold','45 sec','Hold hips level'),E('Mountain Climbers','30 sec','Quick knees · brace core')]},
+{name:'Cooldown',rounds:1,rest:0,note:'About 2 minutes total.',ex:[E('Standing Quad Stretch','30 sec / side','Keep knees close'),E('Seated Hamstring Stretch','30 sec / side','Hinge from hips'),E('Figure-4 Glute Stretch','30 sec / side','Relax the hip'),E('Calf Stretch','30 sec / side','Heel stays down')]}]},
+'mobility-a':{modality:'mobility',name:'Workout A — Full-Body Mobility',description:'Full-body mobility, loaded range of motion and stability work.',tags:['20 min','Mobility','Full Body'],title:'Mobility A · 20 min',goal:'20:00',circuits:[
+{name:'Dynamic Mobility',rounds:1,rest:0,note:'45 sec per movement with about 15 sec to transition.',ex:[E('World’s Greatest Stretch + Rotation','45 sec','Long lunge · open chest'),E('Deep Squat + Reach','45 sec','Heels down · rotate overhead'),E('Downward Dog → Cobra Flow','45 sec','Move smoothly'),E('90/90 Hip Switches','45 sec','Rotate from the hips')]},
+{name:'Loaded Mobility',rounds:2,rest:15,note:'45 sec work / 15 sec transition. Complete 2 rounds.',ex:[E('Goblet Squat Pry','45 sec','Shift gently side to side'),E('Light RDL → Overhead Reach','45 sec','Hinge long · reach tall'),E('Reverse Lunge → Rotation','45 sec','Rotate toward front leg'),E('Half-Kneeling Dumbbell Halo','45 sec','Circle slowly · ribs stacked')]},
+{name:'Mobility + Stability',rounds:2,rest:15,note:'45 sec work / 15 sec transition. Complete 2 rounds.',ex:[E('Bear Plank → Downward Dog','45 sec','Hover knees · push hips back'),E('Cossack Squat','45 sec','Shift laterally · comfortable depth'),E('Glute Bridge → Dumbbell Pullover','45 sec','Hold bridge · control ribs')]},
+{name:'Mobility Reset',rounds:1,rest:0,note:'Finish with one continuous 2-minute flow.',ex:[E('Child’s Pose + Side Reach','30 sec','Breathe into side body'),E('Thread the Needle — Right','30 sec','Rotate through upper back'),E('Thread the Needle — Left','30 sec','Rotate through upper back'),E('Deep Squat Hold','30 sec','Slow nasal breathing')]}]}}
+const workoutCatalog={
+ upper:{name:'Upper Body',description:'Strength and conditioning for chest, back, shoulders and arms.',workouts:['upper-a']},
+ lower:{name:'Lower Body',description:'Strength, power and stability for quads, glutes, hamstrings and calves.',workouts:['lower-a']},
+ mobility:{name:'Mobility',description:'Movement quality, range of motion, stability and recovery.',workouts:['mobility-a']}
+};
+let current='upper-a', currentModality='upper', circuitIdx=0, round=1, completed=new Set();
+let workoutStarted=false, paused=false, countingDown=false;
+let elapsedSeconds=0, circuitSeconds=0, restRemaining=0;
+let activeExercise=0, exerciseElapsed=0;
+let masterTicker=null, countdownTicker=null;
+let soundEnabled=true, hapticsEnabled=true, audioCtx=null;
+let lastRestSecond=null, lastExerciseSecond=null, lastActiveExercise=-1;
+let restReason='exercise', transitionPending=null, wakeLock=null, lastSaveAt=0;
+const STORAGE_KEY='workoutDashboardSessionV3';
+
+
+function ensureAudio(){
+  if(!audioCtx){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC) audioCtx=new AC();
+  }
+  if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+}
+function tone(freq=880,dur=.09,vol=.055,delay=0){
+  if(!soundEnabled)return;
+  ensureAudio(); if(!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+delay;
+  o.type='sine';o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+dur+.02);
+}
+function vibrate(pattern){if(hapticsEnabled && navigator.vibrate) navigator.vibrate(pattern)}
+function alertCue(kind){
+  if(kind==='tick'){tone(760,.07,.045);vibrate(30)}
+  if(kind==='warning'){tone(920,.075,.045);vibrate(35)}
+  if(kind==='start'){tone(980,.09,.06);tone(1320,.13,.06,.11);vibrate([70,45,120])}
+  if(kind==='restEnd'){tone(1050,.09,.06);tone(1400,.14,.065,.11);vibrate([80,45,110])}
+  if(kind==='exerciseEnd'){tone(1180,.1,.06);tone(1540,.15,.065,.12);vibrate([90,45,130])}
+  if(kind==='circuitEnd'){tone(880,.09,.055);tone(1120,.09,.06,.11);tone(1460,.16,.065,.22);vibrate([90,45,90,45,150])}
+  if(kind==='workoutEnd'){tone(880,.1,.06);tone(1180,.1,.065,.13);tone(1560,.2,.07,.27);vibrate([120,55,120,55,220])}
+}
+function syncAlertButtons(){
+  const s=document.getElementById('soundToggle'),h=document.getElementById('hapticToggle');
+  s.classList.toggle('on',soundEnabled);s.textContent=soundEnabled?'🔊 Sound':'🔇 Sound';
+  const supported=!!navigator.vibrate; if(!supported){hapticsEnabled=false;h.disabled=true;h.textContent='📳 Haptics N/A';h.classList.remove('on')}else{h.disabled=false;h.classList.toggle('on',hapticsEnabled);h.textContent=hapticsEnabled?'📳 Haptics':'📴 Haptics'}
+}
+document.getElementById('soundToggle').onclick=()=>{soundEnabled=!soundEnabled;if(soundEnabled){ensureAudio();tone(900,.06,.035)}syncAlertButtons()};
+document.getElementById('hapticToggle').onclick=()=>{if(!navigator.vibrate)return;hapticsEnabled=!hapticsEnabled;if(hapticsEnabled)vibrate(45);syncAlertButtons()};
+
+function renderHome(){
+  const grid=document.getElementById('modalityGrid');
+  grid.innerHTML=Object.entries(workoutCatalog).map(([key,m])=>`<button class="select-card" onclick="openModality('${key}')"><span class="card-arrow">→</span><h2>${m.name}</h2><p>${m.description}</p><div class="select-meta"><span class="select-tag">${m.workouts.length} workout${m.workouts.length===1?'':'s'}</span><span class="select-tag">More can be added</span></div></button>`).join('');
+}
+function showOnly(view){
+  document.getElementById('homeView').style.display=view==='home'?'block':'none';
+  document.getElementById('modalityView').style.display=view==='modality'?'block':'none';
+  document.getElementById('workoutView').style.display=view==='workout'?'block':'none';
+  const b=document.getElementById('bottomNav');if(b)b.style.display=view==='workout'?'block':'none';
+}
+function openModality(key){
+  currentModality=key;const m=workoutCatalog[key];
+  document.getElementById('modalityTitle').textContent=m.name;
+  document.getElementById('modalityDescription').textContent=m.description;
+  document.getElementById('workoutGrid').innerHTML=m.workouts.map(id=>{const w=workouts[id];return `<button class="select-card" onclick="selectWorkout('${id}')"><span class="card-arrow">→</span><h3>${w.name}</h3><p>${w.description}</p><div class="select-meta">${(w.tags||[]).map(t=>`<span class="select-tag">${t}</span>`).join('')}</div></button>`}).join('') || '<div class="empty-card">No workouts have been added yet.</div>';
+  showOnly('modality');window.scrollTo({top:0});
+}
+function selectWorkout(id){
+  if(!workouts[id])return;current=id;currentModality=workouts[id].modality;
+  resetSession(true);document.getElementById('workoutBreadcrumb').textContent=`${workoutCatalog[currentModality].name} · ${workouts[id].name}`;
+  showOnly('workout');window.scrollTo({top:0});
+}
+function returnToWorkouts(){
+  if(workoutStarted||countingDown){paused=true;releaseWakeLock();saveState(true)}
+  openModality(currentModality);
+}
+function getCircuit(){return workouts[current].circuits[circuitIdx]}
+function fmt(s){s=Math.max(0,Number(s)||0);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')}
+function timedSeconds(dose){
+  const d=String(dose).toLowerCase();
+  let m=d.match(/(\d+)\s*sec/); if(m) return parseInt(m[1],10);
+  m=d.match(/(\d+)\s*min/); if(m) return parseInt(m[1],10)*60;
+  return 0;
+}
+function nextIncomplete(){const c=getCircuit();for(let i=0;i<c.ex.length;i++) if(!completed.has(i)) return i;return -1}
+function nextExerciseName(){const i=nextIncomplete();return i>=0?getCircuit().ex[i].name:(transitionPending?.label||'Next round')}
+function totalWorkUnits(){return workouts[current].circuits.reduce((sum,c)=>sum+c.rounds*c.ex.length,0)}
+function doneWorkUnits(){
+  const w=workouts[current]; let done=0;
+  for(let i=0;i<circuitIdx;i++) done+=w.circuits[i].rounds*w.circuits[i].ex.length;
+  done+=(round-1)*getCircuit().ex.length+completed.size;
+  if(!workoutStarted && document.getElementById('status').textContent==='COMPLETE') return totalWorkUnits();
+  return Math.min(done,totalWorkUnits());
+}
+function paintOverall(){const total=totalWorkUnits(),done=doneWorkUnits(),pct=total?Math.round(done/total*100):0;document.getElementById('overallProgress').style.width=pct+'%';document.getElementById('overallText').textContent=pct+'%'}
+function paintRestFocus(){
+  const box=document.getElementById('restFocus');
+  if(restRemaining>0){box.classList.add('show');document.getElementById('restFocusTime').textContent='REST '+fmt(Math.ceil(restRemaining));document.getElementById('restUpNext').textContent=nextExerciseName()}
+  else box.classList.remove('show');
+}
+function paintTimers(){
+  document.getElementById('elapsed').textContent=fmt(elapsedSeconds);
+  document.getElementById('circuitTimer').textContent=fmt(circuitSeconds);
+  document.getElementById('restDisplay').textContent=restRemaining>0?fmt(Math.ceil(restRemaining)):'—';
+  document.getElementById('restBox').classList.toggle('rest-active',restRemaining>0);
+  paintRestFocus(); paintExerciseProgress(); paintOverall();
+}
+function paintExerciseProgress(){
+  document.querySelectorAll('[data-exprogress]').forEach(el=>{
+    const i=Number(el.dataset.exprogress), c=getCircuit(), dur=timedSeconds(c.ex[i].dose); if(!dur)return;
+    const pct=completed.has(i)?100:(i===activeExercise?Math.min(100,(exerciseElapsed/dur)*100):0);
+    el.querySelector('span').style.width=pct+'%';el.classList.toggle('complete',completed.has(i));
+  });
+}
+function processTimerAlerts(prevRest,dur){
+  if(restRemaining>0){const sec=Math.ceil(restRemaining);if(sec!==lastRestSecond){if(sec<=3&&sec>=1)alertCue('warning');lastRestSecond=sec}}
+  else if(prevRest>0&&restRemaining<=0){alertCue('restEnd');lastRestSecond=null}
+  if(activeExercise!==lastActiveExercise){lastExerciseSecond=null;lastActiveExercise=activeExercise}
+  if(dur>0&&!completed.has(activeExercise)&&restRemaining<=0){const sec=Math.ceil(Math.max(0,dur-exerciseElapsed));if(sec!==lastExerciseSecond){if(sec<=3&&sec>=1)alertCue('warning');lastExerciseSecond=sec}}
+}
+function saveState(force=false){
+  const now=performance.now(); if(!force&&now-lastSaveAt<900)return; lastSaveAt=now;
+  if(!workoutStarted&&!paused)return;
+  const state={version:3,current,currentModality,circuitIdx,round,completed:[...completed],elapsedSeconds,circuitSeconds,restRemaining,activeExercise,exerciseElapsed,paused:true,workoutStarted:true,soundEnabled,hapticsEnabled,restReason,transitionPending,savedAt:Date.now()};
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+}
+function clearSaved(){localStorage.removeItem(STORAGE_KEY)}
+async function requestWakeLock(){
+  if(!('wakeLock' in navigator)||!workoutStarted||paused||document.visibilityState!=='visible'){paintWake();return}
+  try{if(!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;paintWake()})}}catch(e){} paintWake();
+}
+async function releaseWakeLock(){try{if(wakeLock)await wakeLock.release()}catch(e){}wakeLock=null;paintWake()}
+function paintWake(){const el=document.getElementById('wakeStatus');el.textContent=('wakeLock' in navigator)?('Screen awake: '+(wakeLock?'on':'off')):'Screen awake: unsupported'}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&workoutStarted&&!paused)requestWakeLock();saveState(true)});
+window.addEventListener('beforeunload',()=>saveState(true));
+function showTransition(title,sub){const b=document.getElementById('transitionBanner');document.getElementById('transitionTitle').textContent=title;document.getElementById('transitionSub').textContent=sub;b.classList.add('show')}
+function hideTransition(){document.getElementById('transitionBanner').classList.remove('show')}
+function beginRest(sec,reason='exercise',pending=null){
+  if(sec<=0){if(pending)performTransition(pending);return}
+  restRemaining=sec;restReason=reason;transitionPending=pending;lastRestSecond=Math.ceil(sec);paintTimers();saveState(true)
+}
+function performTransition(pending){
+  hideTransition(); transitionPending=null; restRemaining=0;
+  if(!pending)return;
+  if(pending.type==='round'){
+    round=pending.round;completed.clear();activeExercise=0;exerciseElapsed=0;lastExerciseSecond=null;lastActiveExercise=0;showTransition(`Round ${round} of ${getCircuit().rounds}`,`Beginning ${getCircuit().name}`);setTimeout(hideTransition,900);render();
+  } else if(pending.type==='circuit'){
+    enterCircuit(pending.index,true);
+  } else if(pending.type==='complete'){
+    completeWorkout();
+  }
+  saveState(true);
+}
+function handleRestEnded(){const pending=transitionPending;const reason=restReason;restRemaining=0;lastRestSecond=null;if(pending)performTransition(pending);else{transitionPending=null;render();saveState(true)}}
+function afterExerciseComplete(){
+  const c=getCircuit(),w=workouts[current];activeExercise=nextIncomplete();exerciseElapsed=0;lastExerciseSecond=null;lastActiveExercise=activeExercise;
+  if(completed.size===c.ex.length){
+    if(round<c.rounds){const nextRound=round+1;showTransition(`Round ${round} complete`,`Next: Round ${nextRound} of ${c.rounds}`);beginRest(c.rest||0,'round',{type:'round',round:nextRound,label:`Round ${nextRound} — ${c.ex[0].name}`})}
+    else if(circuitIdx<w.circuits.length-1){showTransition(`${c.name} complete`,`Next: ${w.circuits[circuitIdx+1].name}`);beginRest(c.rest||0,'circuit',{type:'circuit',index:circuitIdx+1,label:w.circuits[circuitIdx+1].ex[0].name});alertCue('circuitEnd')}
+    else{showTransition(`${c.name} complete`,'Workout complete');beginRest(0,'complete',{type:'complete',label:'Workout complete'})}
+  } else beginRest(c.rest||0,'exercise',null);
+  render();saveState(true);
+}
+function completeExercise(i,auto=false){
+  if(completed.has(i))return;completed.add(i);if(auto)alertCue('exerciseEnd');afterExerciseComplete();
+}
+let lastFrameTime=null;
+function stopMaster(){if(masterTicker){cancelAnimationFrame(masterTicker);masterTicker=null}lastFrameTime=null}
+function masterFrame(now){
+  if(lastFrameTime===null)lastFrameTime=now;const dt=Math.min((now-lastFrameTime)/1000,.1);lastFrameTime=now;
+  if(workoutStarted&&!paused&&!countingDown){
+    const prevRest=restRemaining;elapsedSeconds+=dt;circuitSeconds+=dt;
+    let dur=0;
+    if(restRemaining>0){restRemaining=Math.max(0,restRemaining-dt);if(prevRest>0&&restRemaining<=0){alertCue('restEnd');handleRestEnded()}}
+    else{
+      const c=getCircuit();dur=(activeExercise>=0&&c.ex[activeExercise])?timedSeconds(c.ex[activeExercise].dose):0;
+      if(dur>0&&!completed.has(activeExercise)){exerciseElapsed=Math.min(dur,exerciseElapsed+dt);if(exerciseElapsed>=dur){const finished=activeExercise;completeExercise(finished,true)}}
+    }
+    if(!dur){const c=getCircuit();dur=(activeExercise>=0&&c.ex[activeExercise])?timedSeconds(c.ex[activeExercise].dose):0}
+    processTimerAlerts(prevRest,dur);paintTimers();saveState();
+  }
+  masterTicker=requestAnimationFrame(masterFrame)
+}
+function startMaster(){stopMaster();masterTicker=requestAnimationFrame(masterFrame)}
+function resetSession(clearStore=true){
+  stopMaster();if(countdownTicker){clearInterval(countdownTicker);countdownTicker=null}releaseWakeLock();
+  workoutStarted=false;paused=false;countingDown=false;elapsedSeconds=0;circuitSeconds=0;restRemaining=0;restReason='exercise';transitionPending=null;
+  lastRestSecond=null;lastExerciseSecond=null;lastActiveExercise=-1;circuitIdx=0;round=1;completed.clear();activeExercise=0;exerciseElapsed=0;
+  document.getElementById('status').textContent='READY';document.getElementById('timerBtn').textContent='Start Workout';document.getElementById('pauseBtn').textContent='Pause';document.getElementById('pauseBtn').disabled=true;document.getElementById('countdownOverlay').classList.remove('show');hideTransition();if(clearStore)clearSaved();paintTimers();render();syncAlertButtons();paintWake()
+}
+function render(){
+ const w=workouts[current],c=getCircuit();document.getElementById('workoutTitle').textContent=w.title;document.getElementById('goalStat').textContent=w.goal;
+ document.getElementById('blockStat').textContent=c.name.replace('Strength Block 1 — ','').replace('Strength Block 2 — ','');document.getElementById('roundStat').textContent=`${round} / ${c.rounds}`;document.getElementById('circuitName').textContent=c.name;
+ document.getElementById('roundChip').textContent=c.rounds===1?'Single Pass':`Round ${round} of ${c.rounds}`;document.getElementById('instructions').textContent=c.note;
+ const ni=nextIncomplete();
+ document.getElementById('exerciseList').innerHTML=c.ex.map((e,i)=>{const dur=timedSeconds(e.dose),active=i===activeExercise&&!completed.has(i),next=restRemaining>0&&i===ni;return `<div class="exercise ${completed.has(i)?'done':''} ${active?'active':''} ${next?'next':''}" onclick="toggle(${i})"><div class="photo">Exercise<br>guide</div><div class="info"><div class="exercise-name-row"><h4>${i+1}. ${e.name}</h4><button class="info-btn" aria-label="More information about ${e.name}" onclick="openExerciseInfo(${i},event)">ⓘ</button></div><div class="dose">${e.dose}</div><div class="cue">${e.cue}</div><div class="exercise-status">${completed.has(i)?'Complete':(next?'Up next':(active?(restRemaining>0?'Starts after rest':(dur?'Timed exercise':'Current exercise')):'Upcoming'))}</div></div><button class="check">${completed.has(i)?'✓':'○'}</button>${dur?`<div class="exercise-progress" data-exprogress="${i}"><span></span></div>`:''}</div>`}).join('');
+ const pct=Math.round(completed.size/c.ex.length*100);document.getElementById('roundProgress').style.width=pct+'%';document.getElementById('progressText').textContent=`${completed.size} of ${c.ex.length} exercises complete this round`;
+ const rb=document.getElementById('roundBtn');rb.textContent='Advance Round / Circuit';rb.className='btn '+(completed.size===c.ex.length?'primary':'secondary');
+ document.getElementById('completeBanner').style.display='none';document.getElementById('prevCircuit').classList.toggle('muted-button',circuitIdx===0);document.getElementById('nextCircuit').classList.toggle('muted-button',circuitIdx===w.circuits.length-1);document.getElementById('pauseBtn').disabled=!workoutStarted||countingDown;paintTimers();
+}
+function restTimer(sec){if(!workoutStarted)return;beginRest(sec,'manual',null)}
+function toggle(i){
+  if(restRemaining>0)return;
+  if(completed.has(i)){completed.delete(i);activeExercise=i;exerciseElapsed=0;render();saveState(true);return}
+  if(i!==activeExercise&&activeExercise>=0)return;
+  completeExercise(i,false)
+}
+function enterCircuit(idx,auto=false){circuitIdx=idx;round=1;completed.clear();circuitSeconds=0;restRemaining=0;restReason='exercise';transitionPending=null;activeExercise=0;exerciseElapsed=0;lastRestSecond=null;lastExerciseSecond=null;lastActiveExercise=0;render();if(!auto)window.scrollTo({top:0,behavior:'smooth'});saveState(true)}
+function finishRound(){
+ const c=getCircuit(),w=workouts[current];if(completed.size<c.ex.length){document.getElementById('completeBanner').style.display='block';document.getElementById('completeBanner').textContent='Complete each exercise before advancing.';return}
+ if(round<c.rounds)performTransition({type:'round',round:round+1});else if(circuitIdx<w.circuits.length-1)performTransition({type:'circuit',index:circuitIdx+1});else completeWorkout()
+}
+function completeWorkout(){document.getElementById('status').textContent='COMPLETE';alertCue('workoutEnd');workoutStarted=false;paused=false;stopMaster();releaseWakeLock();clearSaved();document.getElementById('pauseBtn').disabled=true;document.getElementById('timerBtn').textContent='Restart Workout';transitionPending=null;restRemaining=0;render();paintOverall()}
+document.getElementById('prevCircuit').onclick=()=>{if(circuitIdx>0)enterCircuit(circuitIdx-1)};document.getElementById('nextCircuit').onclick=()=>{if(circuitIdx<workouts[current].circuits.length-1)enterCircuit(circuitIdx+1)};document.getElementById('reset').onclick=()=>resetSession(true);
+function startCountdown(){
+ if(countingDown)return;ensureAudio();clearSaved();countingDown=true;paused=false;circuitIdx=0;round=1;completed.clear();elapsedSeconds=0;circuitSeconds=0;restRemaining=0;activeExercise=0;exerciseElapsed=0;render();
+ const overlay=document.getElementById('countdownOverlay'),num=document.getElementById('countdownNumber');let n=5;num.textContent=n;overlay.classList.add('show');document.getElementById('status').textContent='GET READY';document.getElementById('timerBtn').textContent='Starting…';
+ countdownTicker=setInterval(()=>{n--;if(n>0){num.textContent=n;if(n<=3)alertCue('tick')}else{clearInterval(countdownTicker);countdownTicker=null;overlay.classList.remove('show');countingDown=false;workoutStarted=true;paused=false;alertCue('start');document.getElementById('status').textContent='IN PROGRESS';document.getElementById('timerBtn').textContent='Pause';document.getElementById('pauseBtn').disabled=false;startMaster();requestWakeLock();saveState(true);paintTimers()}},1000)
+}
+function togglePause(){if(!workoutStarted||countingDown)return;paused=!paused;document.getElementById('status').textContent=paused?'PAUSED':'IN PROGRESS';document.getElementById('timerBtn').textContent=paused?'Resume':'Pause';document.getElementById('pauseBtn').textContent=paused?'Resume':'Pause';if(paused)releaseWakeLock();else requestWakeLock();saveState(true)}
+document.getElementById('pauseBtn').onclick=togglePause;document.getElementById('timerBtn').onclick=()=>{if(!workoutStarted&&!countingDown){startCountdown();return}togglePause()};
+function loadSaved(){
+ let st=null;try{st=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}catch(e){}if(!st||st.version!==3)return false;
+ const age=Date.now()-(st.savedAt||0);if(age>1000*60*60*24*3){clearSaved();return false}
+ document.getElementById('resumeSummary').textContent=`${workouts[st.current]?.title||'Workout'} — ${workouts[st.current]?.circuits?.[st.circuitIdx]?.name||''}, Round ${st.round}. Elapsed ${fmt(st.elapsedSeconds||0)}. It will reopen paused.`;
+ document.getElementById('resumeOverlay').classList.add('show');
+ document.getElementById('resumeWorkout').onclick=()=>{current=st.current;currentModality=st.currentModality||workouts[st.current]?.modality||'upper';circuitIdx=st.circuitIdx;round=st.round;completed=new Set(st.completed||[]);elapsedSeconds=st.elapsedSeconds||0;circuitSeconds=st.circuitSeconds||0;restRemaining=st.restRemaining||0;activeExercise=st.activeExercise??0;exerciseElapsed=st.exerciseElapsed||0;restReason=st.restReason||'exercise';transitionPending=st.transitionPending||null;soundEnabled=st.soundEnabled!==false;hapticsEnabled=st.hapticsEnabled!==false;workoutStarted=true;paused=true;document.getElementById('workoutBreadcrumb').textContent=`${workoutCatalog[currentModality].name} · ${workouts[current].name}`;showOnly('workout');document.getElementById('resumeOverlay').classList.remove('show');document.getElementById('status').textContent='PAUSED';document.getElementById('timerBtn').textContent='Resume';document.getElementById('pauseBtn').textContent='Resume';document.getElementById('pauseBtn').disabled=false;render();syncAlertButtons();startMaster();saveState(true)};
+ document.getElementById('discardResume').onclick=()=>{document.getElementById('resumeOverlay').classList.remove('show');resetSession(true)};return true
+}
+document.getElementById('closeExerciseInfo').onclick=closeExerciseInfo;document.getElementById('exerciseModal').onclick=(e)=>{if(e.target.id==='exerciseModal')closeExerciseInfo()};document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeExerciseInfo()});
+document.getElementById('backHome').onclick=()=>{showOnly('home');window.scrollTo({top:0})};document.getElementById('backToWorkouts').onclick=returnToWorkouts;renderHome();showOnly('home');syncAlertButtons();resetSession(false);loadSaved();
+</script>
+</body></html>
