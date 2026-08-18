@@ -383,7 +383,7 @@ document.getElementById('hapticToggle').onclick=()=>{if(!navigator.vibrate)retur
 
 function renderHome(){
   const grid=document.getElementById('modalityGrid');
-  grid.innerHTML=Object.entries(workoutCatalog).map(([key,m])=>`<button class="select-card" onclick="openModality('${key}')"><span class="card-arrow">→</span><h2>${m.name}</h2><p>${m.description}</p><div class="select-meta"><span class="select-tag">${m.workouts.length} workout${m.workouts.length===1?'':'s'}</span><span class="select-tag"></span></div></button>`).join('');
+  grid.innerHTML=Object.entries(workoutCatalog).map(([key,m])=>`<button class="select-card" onclick="openModality('${key}')"><span class="card-arrow">→</span><h2>${m.name}</h2><p>${m.description}</p><div class="select-meta"><span class="select-tag">${m.workouts.length} workout${m.workouts.length===1?'':'s'}</span></div></button>`).join('');
 }
 function showOnly(view){
   document.getElementById('homeView').style.display=view==='home'?'block':'none';
